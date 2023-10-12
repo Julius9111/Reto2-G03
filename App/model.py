@@ -59,7 +59,6 @@ def new_data_structs():
         'scorers': None,
         'teams': None,
         'tournaments': None,
-        'official_results': None,
         'official_teams': None
     }
     data_structs['results'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
@@ -67,6 +66,7 @@ def new_data_structs():
     data_structs['shootouts'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
     data_structs['teams'] = mp.newMap(numelements=160, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
     data_structs['tournaments'] = mp.newMap(numelements=80, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
+    data_structs['scorers'] = mp.newMap(numelements=500, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
     
     return data_structs
 
@@ -161,6 +161,9 @@ def load_auxiliar(data_structs):
     for data in lt.iterator(data_structs['results']):
         add_team(data_structs, data['home_team'], data)
         add_team(data_structs, data['away_team'], data)
+        if data['scorers'] != 'Unknown':
+            for scorer in lt.iterator(data['scorers']):
+                add_scorer(data_structs, scorer['name'], data)
     
 
 def add_team(data_structs, teamname, result):
@@ -172,7 +175,7 @@ def add_team(data_structs, teamname, result):
             listresults = me.getValue(entry)
             lt.addLast(listresults, result)
         else:
-            results = lt.newList('ARRAY_LIST')
+            results = lt.newList('ARRAY_LIST', compare_name)
             lt.addLast(results, result)
             mp.put(teams, teamname, results)
     except Exception:
@@ -187,9 +190,25 @@ def add_tourn(data_structs, name, result):
             listresults = me.getValue(entry)
             lt.addLast(listresults, result)
         else:
-            results = lt.newList('ARRAY_LIST')
+            results = lt.newList('ARRAY_LIST', compare_name)
             lt.addLast(results, result)
             mp.put(tournaments, name, results)
+    except Exception:
+        return None
+
+def add_scorer(data_structs, scorer, result):
+    
+    scorers = data_structs['scorers']
+
+    try:
+        entry = mp.get(scorers, scorer)
+        if entry:
+            listscorers = me.getValue(entry)
+            lt.addLast(listscorers, result)
+        else:
+            results = lt.newList('ARRAY_LIST', compare_name)
+            lt.addLast(results, result)
+            mp.put(scorers, scorer, results)
     except Exception:
         return None
 
@@ -360,23 +379,214 @@ def compare_name(team1, team2):
 # Funciones de ordenamiento
 
 
-def sort_criteria(data_1, data_2):
-    """sortCriteria criterio de ordenamiento para las funciones de ordenamiento
-
+def cmp_partidos_by_fecha_y_pais(result1, result2):
+    """
+    Devuelve verdadero (True) si la fecha del resultado1 es menor que en el resultado2,
+    en caso de que sean iguales tenga el nombre de la ciudad en que se disputó el partido,
+    de lo contrario devuelva falso (False).
     Args:
-        data1 (_type_): _description_
-        data2 (_type_): _description_
-
-    Returns:
-        _type_: _description_
+    result1: información del primer registro de resultados FIFA que incluye 
+    “date” y el “country” 
+    result2: información del segundo registro de resultados FIFA que incluye 
+    “date” y el “country” 
     """
     #TODO: Crear función comparadora para ordenar
-    pass
+    fecha1 = result1['date']
+    fecha2 = result2['date']
+
+    if fecha1 > fecha2:
+        return True
+    elif fecha1 < fecha2:
+        return False
+    else:
+        hscore1 = result1['home_score']
+        hscore2 = result2['home_score']
+
+        if hscore1 > hscore2:
+            return True
+        elif hscore1 < hscore2:
+            return False
+        else:
+            ascore1 = result1['away_score']
+            ascore2 = result2['away_score']
+            if ascore1 > ascore2:
+                return True
+            else: 
+                return False
+
+def cmp_goalscorers(scorer1, scorer2):
+
+    fecha1 = scorer1['date']
+    fecha2 = scorer2['date']
+
+    if fecha1 > fecha2:
+        return True
+    elif fecha1 < fecha2:
+        return False
+    else:
+        min1 = (scorer1['minute'])
+        min2 = (scorer2['minute'])
+
+        if min1 > min2:
+            return True
+        elif min1 < min2:
+            return False
+        else:
+            player1 = scorer1['scorer'].lower()
+            player2 = scorer2['scorer'].lower()
+            if player1 > player2:
+                return True
+            else:
+                return False
+
+def cmp_shootouts(shoot1, shoot2):
+
+    fecha1 = shoot1["date"]
+    fecha2 = shoot2["date"]
+
+    if fecha1 > fecha2:
+        return True
+    elif fecha1 < fecha2:
+        return False
+        
+    else: 
+        nombre_1_local = shoot1["home_team"].lower()
+        nombre_2_local = shoot2["home_team"].lower()
+
+        if nombre_1_local > nombre_2_local:
+            return True
+        elif nombre_1_local < nombre_1_local:
+            return False
+        
+        else:
+            nombre_1_visitante = shoot1["away_team"].lower()
+            nombre_2_visitante = shoot2["away_team"].lower()
+
+            if nombre_1_visitante > nombre_2_visitante:
+                return True
+            elif nombre_1_visitante < nombre_1_visitante:
+                return False
+
+def cmp_name(team1, team2):
+
+    t1 = team1['name'].lower()
+    t2 = team2['name'].lower()
+
+    if t1 < t2:
+        return True
+    else:
+        return False
+    
+def cmp_stats(team1, team2):
+    points1 = team1['total_points']
+    points2 = team2['total_points']
+
+    if points1 > points2:
+        return True
+    elif points1 < points2:
+        return False
+    else:
+        difgoals1 = team1['goal_difference']
+        difgoals2 = team2['goal_difference']
+        if difgoals1 > difgoals2:
+            return True
+        elif difgoals1 < difgoals2:
+            return False
+        else:
+            penaltgoals1 = team1['penalty_points']
+            penaltygoals2 = team2['penalty_points']
+            if penaltgoals1 > penaltygoals2:
+                return True
+            elif penaltgoals1 < penaltygoals2:
+                return False
+            else:
+                matches1 = team1['matches']
+                matches2 = team2['matches']
+                if matches1 < matches2:
+                    return True
+                elif matches1 > matches2:
+                    return False
+                else:
+                    owngoals1 = team1['own_goals']
+                    owngoals2 = team2['own_goals']
+                    if owngoals1 < owngoals2:
+                        return True
+                    else:
+                        return False
+                    
+def cmp_top_scorer(scorer1, scorer2):
+    if scorer1['goals'] > scorer2['goals']:
+        return True
+    elif scorer1['goals'] < scorer2['goals']:
+        return False
+    else:
+        if scorer1['avg_time'] < scorer2['avg_time']:
+            return True
+        elif scorer1['avg_time'] > scorer2['avg_time']:
+            return False
+        else:
+            if scorer1['name']  < scorer2['name']:
+                return True
+            else:
+                return False
+    
+def cmp_cities(city1, city2):
+    if city1['meetings'] > city2['meetings']:
+        return True
+    elif city1['meetings'] < city2['meetings']:
+        return False
+    else:
+        if city1['name'] < city2['name']:
+            return True
+        else:
+            return False
+
+def cmp_scorer_points(scorer1, scorer2):
+    if scorer1['total_points'] > scorer2['total_points']:
+        return True
+    elif scorer1['total_points'] < scorer2['total_points']:
+        return False
+    else:
+        if scorer1['total_goals'] > scorer2['total_goals']:
+            return True
+        elif scorer1['total_goals'] < scorer2['total_goals']:
+            return False
+        else:
+            if scorer1['penalty_goals'] > scorer2['penalty_goals']:
+                return True
+            elif scorer1['penalty_goals'] < scorer2['penalty_goals']:
+                return False
+            else:
+                if scorer1['own_goals'] < scorer2['own_goals']:
+                    return True
+                elif scorer1['own_goals'] > scorer2['own_goals']:
+                    return False
+                else:
+                    if scorer1['avg_time'] < scorer2['avg_time']:
+                        return True
+                    elif scorer1['avg_time'] > scorer2['avg_time']:
+                        return False
+                    else:
+                        if scorer1['name'] < scorer2['name']:
+                            return True
+                        else:
+                            return False                    
+
+def cmp_year(year1, year2):
+    if year1['name'] > year2['name']:
+        return True
+    else:
+        return False
 
 
-def sort(data_structs):
+def sort(data_structs, name):
     """
     Función encargada de ordenar la lista con los datos
     """
     #TODO: Crear función de ordenamiento
-    pass
+    if name == 'results':
+        merg.sort(data_structs['results'], cmp_partidos_by_fecha_y_pais)
+    elif name == 'goalscorers':
+        merg.sort(data_structs['goalscorers'], cmp_goalscorers)
+    elif name == 'shootouts':
+        merg.sort(data_structs['shootouts'], cmp_shootouts)

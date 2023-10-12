@@ -54,8 +54,11 @@ def load_data(control, file_size):
     data_structs = control['model']
 
     results = load_results(data_structs, file_size)
+    model.sort(data_structs, 'results')
     goalscorers = load_goalscorers(data_structs, file_size)
+    model.sort(data_structs, 'goalscorers')
     shootouts = load_shootouts(data_structs, file_size)
+    model.sort(data_structs, 'shootouts')
     model.load_auxiliar(data_structs)
 
     return (results, goalscorers, shootouts)

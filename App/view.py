@@ -30,6 +30,7 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 assert cf
 from tabulate import tabulate
+from datetime import datetime
 import traceback
 
 """
@@ -187,8 +188,10 @@ def print_tabulate(data_struct, columns):
     reduced = []
 
     #Iterar cada línea de la lista
-    for result in data['elements']:
+    for result in lt.iterator(data):
         line = []
+        formato_fecha = "%Y-%m-%d"
+        result['date'] = datetime.strftime(result['date'], formato_fecha)
         #Iterar las columnas para solo imprimir las deseadas
         for column in columns:
 
