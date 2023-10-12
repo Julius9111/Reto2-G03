@@ -25,6 +25,7 @@ import model
 import time
 import csv
 import tracemalloc
+from datetime import datetime
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -36,17 +37,93 @@ def new_controller():
     Crea una instancia del modelo
     """
     #TODO: Llamar la función del modelo que crea las estructuras de datos
-    pass
+    control = {
+        'model': None
+    }
+    control['model'] = model.new_data_structs()
+    return control
 
 
 # Funciones para la carga de datos
 
-def load_data(control, filename):
+def load_data(control, file_size):
     """
     Carga los datos del reto
     """
     # TODO: Realizar la carga de datos
-    pass
+    data_structs = control['model']
+
+    results = load_results(data_structs, file_size)
+    goalscorers = load_goalscorers(data_structs, file_size)
+    shootouts = load_shootouts(data_structs, file_size)
+    model.load_auxiliar(data_structs)
+
+    return (results, goalscorers, shootouts)
+
+def load_results(data_structs, file_size):
+
+    results_file = cf.data_dir + 'football/results-utf8-' + file_size + '.csv'
+    input_file = csv.DictReader(open(results_file, encoding='utf-8'))
+
+    id = 1
+    for result in input_file:
+
+        changed = change_type(result)
+        changed['id'] = id
+        changed['scorers'] = 'Unknown'
+        changed['winner'] = 'Unknown'
+        changed['penalty'] = 'Unknown'
+        changed['own_goal'] = 'Unknown'
+        model.add_results(data_structs, changed)
+        id += 1
+    return model.data_size_list(data_structs['results'])
+
+def load_goalscorers(data_structs, file_size):
+
+    goalscorers_file = cf.data_dir + 'football/goalscorers-utf8-' + file_size + '.csv'
+    input_file = csv.DictReader(open(goalscorers_file, encoding='utf-8'))
+
+    id = 1
+    for goalscorer in input_file:
+        
+        if goalscorer['minute'] == "" or goalscorer['minute'] == None:
+            goalscorer['minute'] = -1
+        changed = change_type(goalscorer)
+        changed['id'] = id
+        model.add_goalscorers(data_structs, changed)
+        id += 1
+
+    return model.data_size_list(data_structs['goalscorers'])
+
+def load_shootouts(data_structs, file_size):
+
+    shootouts_file = cf.data_dir + 'football/shootouts-utf8-' + file_size + '.csv'
+    input_file = csv.DictReader(open(shootouts_file, encoding='utf-8'))
+
+    id = 1
+    for shootout in input_file:
+
+        changed = change_type(shootout)
+        changed['id'] = id
+        model.add_shootouts(data_structs, changed)
+        id += 1
+
+    return model.data_size_list(data_structs['shootouts'])
+
+def change_type(data):
+
+    changed = data
+    formato_fecha = "%Y-%m-%d"
+    changed['date'] = datetime.strptime(data['date'], formato_fecha)
+    if changed.get('home_score'):
+        changed['home_score'] = int(data['home_score']) 
+        changed['away_score'] = int(data['away_score'])
+        
+    if changed.get('scorer'):
+        if changed['minute'] != 'Unknown':
+            changed['minute'] = float(data['minute'])
+    
+    return changed
 
 
 # Funciones de ordenamiento
@@ -68,6 +145,9 @@ def get_data(control, id):
     #TODO: Llamar la función del modelo para obtener un dato
     pass
 
+def get_first_last_three(list):
+    data = model.get_first_last_three(list)
+    return data
 
 def req_1(control):
     """

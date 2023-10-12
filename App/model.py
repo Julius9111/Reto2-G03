@@ -52,45 +52,208 @@ def new_data_structs():
     manera vacía para posteriormente almacenar la información.
     """
     #TODO: Inicializar las estructuras de datos
-    pass
+    data_structs = {
+        'results': None,
+        'goalscorers': None,
+        'shootouts': None,
+        'scorers': None,
+        'teams': None,
+        'tournaments': None,
+        'official_results': None,
+        'official_teams': None
+    }
+    data_structs['results'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
+    data_structs['goalscorers'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
+    data_structs['shootouts'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
+    data_structs['teams'] = mp.newMap(numelements=160, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
+    data_structs['tournaments'] = mp.newMap(numelements=80, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
+    
+    return data_structs
 
 
 # Funciones para agregar informacion al modelo
 
-def add_data(data_structs, data):
+def add_results(data_structs, data):
     """
-    Función para agregar nuevos elementos a la lista
+    Función para agregar nuevos elementos a la lista results
     """
     #TODO: Crear la función para agregar elementos a una lista
-    pass
+    lt.addLast(data_structs['results'], data)
+    return data_structs
 
+def add_goalscorers(data_structs, data):
+    """
+    Función para agregar nuevos elementos a la lista goalscorers
+    """
+    #TODO: Crear la función para agregar elementos a una lista
+
+    #Añadir a data_struct goalscorers
+    lt.addLast(data_structs['goalscorers'], data)
+
+    #Obtención de datos para buscar el partido que coincide en results
+    date = data['date']
+    hometeam = data['home_team'].lower()
+    awayteam = data['away_team'].lower()
+
+    if data['scorer'] == '' or data['scorer'] == None:
+        return data_structs
+
+    #Posición del partido que coincide en results
+    pos_result = binary_search_general(data_structs['results'], date, hometeam, awayteam)
+    if pos_result != -1:
+
+        #Cambio de datos según los obtenidos en goalscorers
+        result = lt.getElement(data_structs['results'], pos_result)
+
+        scorer = {'team': data['team'], 'name': data['scorer'], 'minute': data['minute'], 'own_goal': data['own_goal'], 'penalty': data['penalty']}
+        if result['scorers'] == 'Unknown' and data['scorer'] != '':
+            result['scorers'] = lt.newList('ARRAY_LIST', cmpfunction=compare_name)
+
+        lt.addLast(result['scorers'], scorer)
+
+        #Cambiar penalty si hay información
+        if result['penalty'] == 'Unknown':
+            result['penalty'] = scorer['penalty']
+        else:
+            if result['penalty'] == 'False' and scorer['penalty'] == 'True':
+                result['penalty'] == 'True'
+        
+        #Cambiar own_goal si hay información
+        if result['own_goal'] == 'Unknown':
+            result['own_goal'] = scorer['own_goal']
+        else:
+            if result['own_goal'] == 'False' and scorer['own_goal'] == 'True':
+                result['own_goal'] == 'True'
+        
+        lt.changeInfo(data_structs['results'], pos_result, result)
+    return data_structs
+
+def add_shootouts(data_structs, data):
+    """
+    Función para agregar nuevos elementos a la lista shootouts
+    """
+    #TODO: Crear la función para agregar elementos a una lista
+
+    #Añadir información al data_struct shootouts
+    lt.addLast(data_structs['shootouts'], data)
+
+    #Datos para encontrar el archivo que coincide en results
+    date = data['date']
+    hometeam = data['home_team'].lower()
+    awayteam = data['away_team'].lower()
+
+    #Posición del partido que coincide en results
+    pos_result = binary_search_general(data_structs['results'], date, hometeam, awayteam)
+
+    if pos_result != -1:
+        result = lt.getElement(data_structs['results'], pos_result)
+        result['winner'] = data['winner']
+
+        #Actualizar la información en el data_struct results
+        lt.changeInfo(data_structs['results'], pos_result, result)
+    return data_structs
+
+def load_auxiliar(data_structs):
+    """
+    Función para crear las estructuras de datos auxiliares
+    """
+    #Recorrer cada linea de resultados para crear estructuras auxiliares
+    for data in lt.iterator(data_structs['results']):
+        add_team(data_structs, data['home_team'], data)
+        add_team(data_structs, data['away_team'], data)
+    
+
+def add_team(data_structs, teamname, result):
+    teams = data_structs['teams']
+
+    try:
+        entry = mp.get(teams, teamname)
+        if entry:
+            listresults = me.getValue(entry)
+            lt.addLast(listresults, result)
+        else:
+            results = lt.newList('ARRAY_LIST')
+            lt.addLast(results, result)
+            mp.put(teams, teamname, results)
+    except Exception:
+        return None
+    
+def add_tourn(data_structs, name, result):
+    tournaments = data_structs['tournaments']
+
+    try:
+        entry = mp.get(tournaments, name)
+        if entry:
+            listresults = me.getValue(entry)
+            lt.addLast(listresults, result)
+        else:
+            results = lt.newList('ARRAY_LIST')
+            lt.addLast(results, result)
+            mp.put(tournaments, name, results)
+    except Exception:
+        return None
 
 # Funciones para creacion de datos
 
-def new_data(id, info):
-    """
-    Crea una nueva estructura para modelar los datos
-    """
-    #TODO: Crear la función para estructurar los datos
+def new_data(data):
     pass
 
 
 # Funciones de consulta
 
-def get_data(data_structs, id):
+def get_first_last_three(list):
     """
-    Retorna un dato a partir de su ID
+    Retorna una lista con los tres primeros y tres últimos elementos
     """
-    #TODO: Crear la función para obtener un dato de una lista
-    pass
+    filtered = lt.newList("ARRAY_LIST")
+    for i in range(1, 4):
+        lt.addLast(filtered, lt.getElement(list, i))
+    for i in range(-2, 1):
+        lt.addLast(filtered, lt.getElement(list, i))
+
+    return filtered
 
 
-def data_size(data_structs):
+def data_size_list(data_structs):
     """
     Retorna el tamaño de la lista de datos
     """
     #TODO: Crear la función para obtener el tamaño de una lista
-    pass
+    return lt.size(data_structs)
+
+def binary_search_general(data_structs, date, hometeam, awayteam):
+
+    """
+    Retorna la posición del partido en el que coinciden la fecha, el equipo local y el equipo visitante
+    """
+
+    low = 1
+    high = lt.size(data_structs)
+
+    while low <= high:
+        mid = (low + high) // 2
+        result = lt.getElement(data_structs, mid)
+        datemid = result['date']
+        if datemid < date:
+            high = mid -1
+        elif datemid > date:
+            low = mid + 1
+        else:
+            hometeam_mid = result['home_team'].lower()
+            if hometeam_mid < hometeam:
+                high = mid - 1
+            elif hometeam_mid > hometeam:
+                low = mid + 1
+            else:
+                awayteam_mid = result['away_team'].lower()
+                if awayteam_mid < awayteam:
+                    high = mid - 1
+                elif awayteam_mid > awayteam:
+                    low = mid + 1
+                else:
+                    return mid
+    return -1
+
 
 
 def req_1(data_structs):
@@ -159,12 +322,40 @@ def req_8(data_structs):
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
-def compare(data_1, data_2):
+def compare_id(data_1, data_2):
     """
-    Función encargada de comparar dos datos
+    Función encargada de comparar dos datos por id
     """
     #TODO: Crear función comparadora de la lista
-    pass
+    if data_1['id'] > data_2['id']:
+        return 1
+    elif data_1['id'] < data_2['id']:
+        return -1
+    else:
+        return 0
+    
+def compare_map_name(data1, data2):
+    dataentry = me.getKey(data2)
+    if data1 > dataentry:
+        return 1
+    elif data1 < dataentry:
+        return -1
+    else:
+        return 0
+
+def compare_name(team1, team2):
+    """
+    Función encargada de comparar dos datos por nombre
+    """
+    t1 = team1.lower()
+    t2 = team2['name'].lower()
+
+    if t1 > t2:
+        return 1
+    elif t1 < t2:
+        return -1
+    else:
+        return 0
 
 # Funciones de ordenamiento
 
