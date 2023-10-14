@@ -36,6 +36,7 @@ from DISClib.Algorithms.Sorting import insertionsort as ins
 from DISClib.Algorithms.Sorting import selectionsort as se
 from DISClib.Algorithms.Sorting import mergesort as merg
 from DISClib.Algorithms.Sorting import quicksort as quk
+from datetime import datetime
 assert cf
 
 """
@@ -110,7 +111,7 @@ def add_goalscorers(data_structs, data):
             result['scorers'] = lt.newList('ARRAY_LIST', cmpfunction=compare_name)
 
         lt.addLast(result['scorers'], scorer)
-
+        #lt.addLast(result, {"team": data["team"]})
         #Cambiar penalty si hay información
         if result['penalty'] == 'Unknown':
             result['penalty'] = scorer['penalty']
@@ -124,7 +125,9 @@ def add_goalscorers(data_structs, data):
         else:
             if result['own_goal'] == 'False' and scorer['own_goal'] == 'True':
                 result['own_goal'] == 'True'
-        
+
+        result['minute'] = scorer['minute']
+        result['team'] = scorer['team']
         lt.changeInfo(data_structs['results'], pos_result, result)
     return data_structs
 
@@ -275,12 +278,20 @@ def binary_search_general(data_structs, date, hometeam, awayteam):
 
 
 
-def req_1(nombre, numero_goles, control):
+def req_1(control, nombre, numero_goles):
     """
     Función que soluciona el requerimiento 1
     """
-    
-    return control
+    mapa_jugadores = control["model"]["scorers"] 
+    total_scorers = mp.size(mapa_jugadores) #num scorers
+    pareja = mp.get(mapa_jugadores, nombre) #pareja llave valor con key nombre y value una lista de los goles
+    lista_goles = me.getValue(pareja) # se obtiene la lista
+    total_goals = lt.size(lista_goles)
+    penaltis = 0
+    for gol in lt.iterator(lista_goles):
+        if gol["penalty"] == "True":        #Se evaluan los goles para saber si son penal o no
+            penaltis += 1
+    return total_scorers, total_goals, penaltis, lista_goles
 
 
 def req_2(data_structs):
@@ -299,12 +310,16 @@ def req_3(data_structs):
     pass
 
 
-def req_4(data_structs):
+def req_4(control, nombre, fechai, fechaf):
     """
     Función que soluciona el requerimiento 4
     """
-    # TODO: Realizar el requerimiento 4
-    pass
+    fecha_inicial = datetime.strptime(fechai, "%Y-%m-%d")
+    fecha_final = datetime.strptime(fechaf, "%Y-%m-%d")
+    mapa_torunaments = control["model"]["tournaments"]
+    pareja = mp.get(mapa_torunaments, nombre)
+    lista_partidos = me.getValue(pareja)
+    return lista_partidos
 
 
 def req_5(data_structs):

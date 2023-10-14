@@ -233,8 +233,41 @@ def print_req_1(control, nombre, numero_goles):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    solucion = controller.req_1(control, nombre, numero_goles)
-    print(solucion)
+    total_scorers, total_goals, penaltis, lista_goles = controller.req_1(control, nombre, numero_goles)
+    print(f"\n\nTop {numero_goles} goals:")
+    print(f"Player Name {nombre}")
+    if lt.size(lista_goles) < numero_goles:
+      print(f"\n\nSe han encontrado solamente {lt.size(lista_goles)} goles")
+      lista_goles_top = lista_goles
+    else:
+      print("\n\nLos siete goles son: ")
+      lista_goles_top = lt.subList(lista_goles, 1, numero_goles)
+    print("Total scorers: ", total_scorers)
+    print("Total goals: ", total_goals)
+    print("Total penaltis: ", penaltis)
+    lista = []
+    for gol in lt.iterator(lista_goles_top):
+        lista.append(gol)
+    lista_llaves = ["date", "home_team", "away_team", "team", "scorer", "minute", "own_goal", "penalty"]
+
+
+    lista_valores = []
+    pos = -1
+    for gol in lista:
+        pos += 1
+        lista_valores.append([])
+        for llave in lista_llaves:
+            if llave == "scorer":
+                lista_valores[pos].append(nombre)
+            elif llave == "date":
+                fecha = gol["date"].strftime("%Y-%m-%d")
+                lista_valores[pos].append(fecha)
+            else:
+                lista_valores[pos].append(gol[llave])
+
+
+    print(tabulate(lista_valores, headers=lista_llaves, tablefmt='grid'))
+
 
 
 def print_req_2(control):
@@ -253,12 +286,13 @@ def print_req_3(control):
     pass
 
 
-def print_req_4(control):
+def print_req_4(control, nombre, fechai, fechaf):
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    res = controller.req_4(control, nombre, fechai, fechaf)
+    print(res)
 
 
 def print_req_5(control):
@@ -328,9 +362,9 @@ if __name__ == "__main__":
             else:
                 print('Por favor selecciona una opción válida')
         elif int(inputs) == 2:
-            numero_goles = int(input("Número (N) de goles de consulta:"))
-            nombre_jugador = int(input("Ingrese el nombre completo del jugador:"))
-            print_req_1(numero_goles, nombre_jugador, control)
+            numero_goles = 5#int(input("Número (N) de goles de consulta:"))
+            nombre_jugador = "Michael Ballack" #str(input("Ingrese el nombre completo del jugador:"))
+            print_req_1(control, nombre_jugador, numero_goles)
 
         elif int(inputs) == 3:
             print_req_2(control)
@@ -339,7 +373,10 @@ if __name__ == "__main__":
             print_req_3(control)
 
         elif int(inputs) == 5:
-            print_req_4(control)
+            nombre = "Copa América"#input("Diga el nombre del torneo: ")
+            fechai = "1955-06-01"#input("Diga la fecha inicial: ")
+            fechaf = "2022-06-30"#input("Diga la fecha final: ")
+            print_req_4(control, nombre, fechai, fechaf)
 
         elif int(inputs) == 6:
             print_req_5(control)
