@@ -275,12 +275,12 @@ def binary_search_general(data_structs, date, hometeam, awayteam):
 
 
 
-def req_1(data_structs):
+def req_1(nombre, numero_goles, control):
     """
     Función que soluciona el requerimiento 1
     """
-    # TODO: Realizar el requerimiento 1
-    pass
+    
+    return control
 
 
 def req_2(data_structs):

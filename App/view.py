@@ -229,12 +229,12 @@ def print_data(control, id):
     #TODO: Realizar la función para imprimir un elemento
     pass
 
-def print_req_1(control):
+def print_req_1(control, nombre, numero_goles):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    solucion = controller.req_1(control, nombre, numero_goles)
+    print(solucion)
 
 
 def print_req_2(control):
@@ -328,7 +328,9 @@ if __name__ == "__main__":
             else:
                 print('Por favor selecciona una opción válida')
         elif int(inputs) == 2:
-            print_req_1(control)
+            numero_goles = int(input("Número (N) de goles de consulta:"))
+            nombre_jugador = int(input("Ingrese el nombre completo del jugador:"))
+            print_req_1(numero_goles, nombre_jugador, control)
 
         elif int(inputs) == 3:
             print_req_2(control)
