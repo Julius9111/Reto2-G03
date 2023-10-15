@@ -161,6 +161,7 @@ def load_auxiliar(data_structs):
     for data in lt.iterator(data_structs['results']):
         add_team(data_structs, data['home_team'], data)
         add_team(data_structs, data['away_team'], data)
+        add_tourn(data_structs, data['tournament'], data)
         if data['scorers'] != 'Unknown':
             for scorer in lt.iterator(data['scorers']):
                 add_scorer(data_structs, scorer['name'], data)
