@@ -62,9 +62,9 @@ def load_data(control, file_size='small', memflag=True):
     results = load_results(data_structs, file_size)
     model.sort(data_structs, 'results')
     goalscorers = load_goalscorers(data_structs, file_size)
-    model.sort(data_structs, 'goalscorers')
+    #model.sort(data_structs, 'goalscorers')
     shootouts = load_shootouts(data_structs, file_size)
-    model.sort(data_structs, 'shootouts')
+    #model.sort(data_structs, 'shootouts')
     model.load_auxiliar(data_structs)
 
     endtime = get_time()

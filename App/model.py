@@ -48,7 +48,7 @@ dos listas, una para los videos, otra para las categorias de los mismos.
 # Construccion de modelos
 
 
-def new_data_structs(mptype = 'CHAINING', ldfactor = 4):
+def new_data_structs(mptype, ldfactor):
     """
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
@@ -66,9 +66,9 @@ def new_data_structs(mptype = 'CHAINING', ldfactor = 4):
     data_structs['results'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
     data_structs['goalscorers'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
     data_structs['shootouts'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
-    data_structs['teams'] = mp.newMap(numelements=160, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
-    data_structs['tournaments'] = mp.newMap(numelements=80, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
-    data_structs['scorers'] = mp.newMap(numelements=500, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
+    data_structs['teams'] = mp.newMap(numelements=325, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
+    data_structs['tournaments'] = mp.newMap(numelements=150, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
+    data_structs['scorers'] = mp.newMap(numelements=8000, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
     
     return data_structs
 
@@ -163,9 +163,9 @@ def load_auxiliar(data_structs):
     """
     #Recorrer cada linea de resultados para crear estructuras auxiliares
     for data in lt.iterator(data_structs['results']):
-        add_team(data_structs, data['home_team'], data)
-        add_team(data_structs, data['away_team'], data)
-        add_tourn(data_structs, data['tournament'], data)
+        #add_team(data_structs, data['home_team'], data)
+        #add_team(data_structs, data['away_team'], data)
+        #add_tourn(data_structs, data['tournament'], data)
         if data['scorers'] != 'Unknown':
             for scorer in lt.iterator(data['scorers']):
                 add_scorer(data_structs, scorer['name'], data)

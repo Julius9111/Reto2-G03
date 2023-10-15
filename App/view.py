@@ -40,7 +40,7 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
-def new_controller(mptype='CHAINING', loadfactor=4):
+def new_controller(mptype, loadfactor):
     """
         Se crea una instancia del controlador
     """
@@ -384,9 +384,6 @@ def print_req_8(control):
 control = None
 file_size = None
 mapdata = None
-
-# Se crea el controlador asociado a la vista
-control = new_controller()
 
 # main del reto
 if __name__ == "__main__":
