@@ -278,12 +278,28 @@ def print_req_2(control):
     pass
 
 
-def print_req_3(control):
+def print_req_3(control, name, inicial, final):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 3
-    pass
+    list, size, home, away, available_teams, d_time = controller.req_3(control, name, inicial, final)
+    print(("="*15) + "Req No. 3 Inputs" + ("="*15))
+    print('Team name:', name)
+    print('Start date:', inicial)
+    print('End date:', final, '\n')
+
+    print(("="*15) + "Req No. 3 Results" + ("="*15))
+    print('Total teams with available information:', str(available_teams))
+    print(name, 'Total games:', str(size))
+    print(name, 'Total home games:', str(home))
+    print(name, 'Total away games:', str(away), '\n')
+
+    columns = ['date', 'home_score', 'away_score', 'home_team', 'away_team', 'country', 'city', 'tournament', 'penalty', 'own_goal']
+    table = print_tabulate(list, columns)
+    print(table)
+    d_time = f'{d_time:.3f}'
+    print('Tiempo de ejecución:', str(d_time), 'ms')
+
 
 
 def print_req_4(control, nombre, fechai, fechaf):
@@ -370,7 +386,11 @@ if __name__ == "__main__":
             print_req_2(control)
 
         elif int(inputs) == 4:
-            print_req_3(control)
+            name = input('Ingrese el nombre del equipo: ')
+            print('Por favor coloque las fechas en el siguiente formato: YYYY-MM-DD')
+            inicial = input('Ingrese la fecha inicial: ')
+            final = input('Ingrese la fecha final: ')
+            print_req_3(control, name, inicial, final)
 
         elif int(inputs) == 5:
             nombre = "Copa América"#input("Diga el nombre del torneo: ")

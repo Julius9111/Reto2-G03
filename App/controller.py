@@ -169,12 +169,25 @@ def req_2(control):
     pass
 
 
-def req_3(control):
+def req_3(control, name, inicial, final):
     """
     Retorna el resultado del requerimiento 3
     """
-    # TODO: Modificar el requerimiento 3
-    pass
+    name = name.lower()
+    formato_fecha = "%Y-%m-%d"
+    inicial = datetime.strptime(inicial, formato_fecha)
+    final = datetime.strptime(final, formato_fecha)
+    start_time = get_time()
+    if final >= inicial:
+        filtered_list, home, away, available_teams = model.req_3(control['model'], name, inicial, final)
+        lt_size = model.lt.size(filtered_list)
+        end_time = get_time()
+        d_time = delta_time(start_time, end_time)
+        return filtered_list, lt_size, home, away, available_teams, d_time
+    else:
+        end_time = get_time()
+        d_time = delta_time(start_time, end_time)
+        return (None, 0, 0, 0, d_time)
 
 
 def req_4(control, nombre, fechai, fechaf):

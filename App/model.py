@@ -36,7 +36,8 @@ from DISClib.Algorithms.Sorting import insertionsort as ins
 from DISClib.Algorithms.Sorting import selectionsort as se
 from DISClib.Algorithms.Sorting import mergesort as merg
 from DISClib.Algorithms.Sorting import quicksort as quk
-from datetime import datetime
+from datetime import datetime, timedelta
+
 assert cf
 
 """
@@ -277,6 +278,112 @@ def binary_search_general(data_structs, date, hometeam, awayteam):
                     return mid
     return -1
 
+def binary_search_start_date(data_structs, start):
+    """
+    Busqueda binaria para encontrar una fecha de inicio
+    """
+    low = 1
+    high = lt.size(data_structs)
+
+    recent = (lt.firstElement(data_structs))['date']
+    oldest = (lt.lastElement(data_structs))['date']
+    
+    if start > recent:
+        return -1
+
+    #Confirmar que la fecha está en la lista en una posición intermedia
+    if start >= oldest:
+
+        #Buscar un día antes para evitar errores no encontrar la fecha mínima que coincide
+        prev = start - timedelta(days=1)
+
+        i = lt.size(data_structs)
+        #Busqueda binaria
+        while low <= high:
+            mid = (low + high) // 2
+            team = lt.getElement(data_structs, mid)
+            mid_date = team['date']
+            if mid_date == prev:
+                i = mid
+                #Salir de un bucle infinito que no cambia el low
+                low = lt.size(data_structs) + 1
+            elif mid_date > prev:
+                low = mid + 1
+            else:
+                high = mid - 1
+            
+            if low == high:
+                i = mid
+            i = mid
+                
+        find = False
+        #Iterar hacia atrás para encontrar la primera fecha que coincide
+        while not find:
+            result = lt.getElement(data_structs, i)
+            date = result['date']
+            if date >= start:
+                #Se encuentra la fecha
+                return i
+            else:
+                #Se sigue iterando
+                i -= 1
+
+            if i <= 0:
+                return -1
+    else:
+        #Retornar posición de la fecha más antigua
+        return lt.size(data_structs)
+
+def binary_search_end_date(data_structs, end):
+    """
+    Busqueda binaria para encontrar una fecha de final
+    """
+    low = 1
+    high = lt.size(data_structs)
+
+    recent = (lt.firstElement(data_structs))['date']
+    oldest = (lt.lastElement(data_structs))['date']
+
+    #Confirmar si la fecha existe en el rango de la estructura
+    if end < oldest:
+        return -1
+    
+    #Confirmar que la fecha está en una posición intermedia
+    if  end <= recent:
+        #Buscar un día después para evitar errores no encontrar la fecha máxima que coincide
+        next = end + timedelta(days=1)
+        next_id = 1
+        while low <= high:
+            mid = (low + high) // 2
+            team = lt.getElement(data_structs, mid)
+            mid_date = team['date']
+            if mid_date == next:
+                next_id = mid
+                pass
+            elif mid_date > next:
+                low = mid + 1
+            else:
+                high = mid - 1
+            if low == high:
+                next_id = mid
+                pass
+        find = False
+        i = next_id
+        #Iterar hacia adelante para encontrar la primera fecha que coincide
+        while not find:
+            #Confirmar que el indice existe
+            if i > 0 and i < lt.size(data_structs):
+
+                date = (lt.getElement(data_structs, i))['date']
+                if date <= end:
+
+                    return i
+                else:
+                    i += 1
+            else:
+                return 1
+    else:
+        return 1
 
 
 def req_1(control, nombre, numero_goles):
@@ -303,12 +410,42 @@ def req_2(data_structs):
     pass
 
 
-def req_3(data_structs):
+def req_3(data_structs, teamname, startdate, enddate):
     """
     Función que soluciona el requerimiento 3
     """
-    # TODO: Realizar el requerimiento 3
-    pass
+    teams = data_structs['teams']
+    available_teams = mp.size(teams)
+    teamname = teamname.capitalize()
+    entry = mp.get(teams, teamname)
+    if entry:
+        listresults = me.getValue(entry)
+        pos_date_inicial = binary_search_start_date(listresults, startdate)
+        pos_date_final = binary_search_end_date(listresults, enddate)
+        if pos_date_final == -1 or pos_date_inicial == -1:
+            return None, 0, 0, available_teams
+
+        #Iniciar contadores de local y visitante
+        home = 0
+        away = 0
+        nlower = teamname.lower()
+
+        #Sublista filtrada
+        sublist = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
+
+        #Añadir resultados y sumar contadores
+        for i in range(pos_date_final, pos_date_inicial + 1):
+
+            result = lt.getElement(listresults, i)
+            if result['home_team'].lower() == nlower:
+                home += 1
+            else:
+                away +=1
+            lt.addLast(sublist, result)
+        
+        return sublist, home, away, available_teams
+    else:
+        return None, 0, 0, available_teams
 
 
 def req_4(control, nombre, fechai, fechaf):
