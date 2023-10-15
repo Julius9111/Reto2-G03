@@ -152,12 +152,13 @@ def get_first_last_three(list):
     data = model.get_first_last_three(list)
     return data
 
-def req_1(control):
+def req_1(control, nombre, numero_goles):
     """
     Retorna el resultado del requerimiento 1
     """
-    # TODO: Modificar el requerimiento 1
-    pass
+    total_scorers, total_goals, penaltis, lista_goles = model.req_1(control, nombre, numero_goles)
+    return total_scorers, total_goals, penaltis, lista_goles
+    
 
 
 def req_2(control):
@@ -176,12 +177,13 @@ def req_3(control):
     pass
 
 
-def req_4(control):
+def req_4(control, nombre, fechai, fechaf):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
-    pass
+    resp = model.req_4(control, nombre, fechai, fechaf)
+    return resp
 
 
 def req_5(control):
