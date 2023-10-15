@@ -32,7 +32,7 @@ El controlador se encarga de mediar entre la vista y el modelo.
 """
 
 
-def new_controller():
+def new_controller(mptype, loadfactor):
     """
     Crea una instancia del modelo
     """
@@ -40,17 +40,23 @@ def new_controller():
     control = {
         'model': None
     }
-    control['model'] = model.new_data_structs()
+    control['model'] = model.new_data_structs(mptype, loadfactor)
     return control
 
 
 # Funciones para la carga de datos
 
-def load_data(control, file_size):
+def load_data(control, file_size='small', memflag=True):
     """
     Carga los datos del reto
     """
     # TODO: Realizar la carga de datos
+    starttime = get_time()
+
+    if memflag:
+        tracemalloc.start()
+        start_memory = get_memory()
+
     data_structs = control['model']
 
     results = load_results(data_structs, file_size)
@@ -61,7 +67,16 @@ def load_data(control, file_size):
     model.sort(data_structs, 'shootouts')
     model.load_auxiliar(data_structs)
 
-    return (results, goalscorers, shootouts)
+    endtime = get_time()
+    dtime = delta_time(starttime, endtime)
+
+    if memflag:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        dmemory = delta_memory(stop_memory, start_memory)
+        return (results, goalscorers, shootouts, [dtime, dmemory])
+
+    return (results, goalscorers, shootouts, dtime)
 
 def load_results(data_structs, file_size):
 

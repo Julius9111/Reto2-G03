@@ -48,7 +48,7 @@ dos listas, una para los videos, otra para las categorias de los mismos.
 # Construccion de modelos
 
 
-def new_data_structs():
+def new_data_structs(mptype = 'CHAINING', ldfactor = 4):
     """
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
@@ -66,9 +66,9 @@ def new_data_structs():
     data_structs['results'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
     data_structs['goalscorers'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
     data_structs['shootouts'] = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compare_id)
-    data_structs['teams'] = mp.newMap(numelements=160, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
-    data_structs['tournaments'] = mp.newMap(numelements=80, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
-    data_structs['scorers'] = mp.newMap(numelements=500, maptype='CHAINING', loadfactor=4, cmpfunction=compare_map_name)
+    data_structs['teams'] = mp.newMap(numelements=160, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
+    data_structs['tournaments'] = mp.newMap(numelements=80, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
+    data_structs['scorers'] = mp.newMap(numelements=500, maptype=mptype, loadfactor=ldfactor, cmpfunction=compare_map_name)
     
     return data_structs
 

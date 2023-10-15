@@ -40,13 +40,13 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
-def new_controller():
+def new_controller(mptype='CHAINING', loadfactor=4):
     """
         Se crea una instancia del controlador
     """
     #TODO: Llamar la función del controlador donde se crean las estructuras de datos
    
-    control = controller.new_controller()
+    control = controller.new_controller(mptype, loadfactor)
     return control
 
 
@@ -65,12 +65,12 @@ def print_menu():
     print("0- Salir")
 
 
-def load_data(control, file_size):
+def load_data(control, file_size, memflag=True):
     """
     Carga los datos
     """
     #TODO: Realizar la carga de datos
-    results, goalscorers, shootouts = controller.load_data(control,file_size)
+    results, goalscorers, shootouts, deltadata = controller.load_data(control,file_size, memflag)
 
     print('Total de encuentros cargados: ' + str(results))
     print('Total de anotaciones cargadas: ' + str(goalscorers))
@@ -96,7 +96,15 @@ def load_data(control, file_size):
     table_shootouts = print_tabulate(control['model']['shootouts'], keys_shootouts)
     print(table_shootouts, "\n")
     
+    print_delta_data(deltadata)
     pass
+
+def print_delta_data(deltadata):
+    if isinstance(deltadata, (list, tuple)) is True:
+        print('Tiempo [ms]: ',  f"{deltadata[0]:.3f}")
+        print('Memoria [kB]: ',  f"{deltadata[1]:.3f}")
+    else:
+        print('Tiempo [ms]: ',  f"{deltadata:.3f}")
 
 
 def print_data(control, id):
@@ -172,7 +180,37 @@ def choose_sort():
         return 'quick'
     else:
         return None
+
+def choose_mapdata():
+    print('Por favor elija el tipo de manejod de colisiones que desea:')
+    print('1. Linear Probing')
+    print('2. Chaining')
+    user = input('Seleccione una opción: ')
+    maptype = None
+    loadfactor = None 
+    if int(user) == 1:
+        maptype = 'PROBING'
+    elif int(user) == 2:
+        maptype = 'CHAINING'
     
+    user2 = float(input('Ingrese el factor de carga que desee: '))
+    loadfactor = user2
+    return maptype, loadfactor
+
+def choose_memory_tracking():
+    print('¿Desea medir la memoria consumida en la ejecución')
+    print('1. Si/Yes')
+    print('2. No')
+    user = int(input('Seleccione su opción: '))
+
+    if user == 1:
+        return True
+    elif user == 2:
+        return False
+    else:
+        print('No se seleccionó una opción válida')
+    
+
 def print_tabulate(data_struct, columns):
     data = data_struct
 
@@ -345,6 +383,7 @@ def print_req_8(control):
 
 control = None
 file_size = None
+mapdata = None
 
 # Se crea el controlador asociado a la vista
 control = new_controller()
@@ -360,23 +399,28 @@ if __name__ == "__main__":
         print_menu()
         inputs = input('Seleccione una opción para continuar\n')
         if int(inputs) == 1:
-            if file_size == None:
-                file_size = choose_size()
+            print('¿Desea usar las opciones predeterminadas?')
+            print('1. Si \n2.No')
+            user = int(input('Seleccione una opción: '))
 
-            if file_size != None:
-
-                control = new_controller()
-                print("Cargando información de los archivos ....\n")
-
-                load_data(control, file_size)
-
-                print('Tamaño de archivo:', file_size)
-                print('ADT:')
-                print('Algoritmo de ordenamiento:')
-                print('Tiempo de ordenamiento:')
-
+            if user == 1:
+                memflag = True
+                maptype = 'CHAINING'
+                loadfactor = 4
+                file_size = 'small'
             else:
-                print('Por favor selecciona una opción válida')
+                if file_size == None:
+                    file_size = choose_size()
+                
+                if mapdata == None:
+                    maptype, loadfactor = choose_mapdata()
+                memflag = choose_memory_tracking()
+            control = new_controller(maptype, loadfactor)
+            print("Cargando información de los archivos ....\n")
+
+            if memflag or not memflag:
+                load_data(control, file_size, memflag)
+
         elif int(inputs) == 2:
             numero_goles = 5#int(input("Número (N) de goles de consulta:"))
             nombre_jugador = "Michael Ballack" #str(input("Ingrese el nombre completo del jugador:"))
